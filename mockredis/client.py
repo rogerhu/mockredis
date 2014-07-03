@@ -963,13 +963,13 @@ class MockRedis(object):
 
         return len(zset) if zset is not None else 0
 
-    def zcount(self, name, min_, max_):
+    def zcount(self, name, min, max):
         zset = self._get_zset(name, "ZCOUNT")
 
         if not zset:
             return 0
 
-        return len(zset.scorerange(float(min_), float(max_)))
+        return len(zset.scorerange(float(min), float(max)))
 
     def zincrby(self, name, value, amount=1):
         zset = self._get_zset(name, "ZINCRBY", create=True)
@@ -1015,7 +1015,7 @@ class MockRedis(object):
         func = self._range_func(withscores, score_cast_func)
         return [func(item) for item in zset.range(start, end, desc)]
 
-    def zrangebyscore(self, name, min_, max_, start=None, num=None,
+    def zrangebyscore(self, name, min, max, start=None, num=None,
                       withscores=False, score_cast_func=float):
         if (start is None) ^ (num is None):
             raise RedisError('`start` and `num` must both be specified')
@@ -1027,7 +1027,7 @@ class MockRedis(object):
 
         func = self._range_func(withscores, score_cast_func)
 
-        scorerange = zset.scorerange(float(min_), float(max_))
+        scorerange = zset.scorerange(float(min), float(max))
         if start is not None and num is not None:
             start, num = self._translate_limit(len(scorerange), int(start), int(num))
             scorerange = scorerange[start:start + num]
@@ -1063,7 +1063,7 @@ class MockRedis(object):
             del self.redis[name]
         return removal_count
 
-    def zremrangebyscore(self, name, min_, max_):
+    def zremrangebyscore(self, name, min, max):
         zset = self._get_zset(name, "ZREMRANGEBYSCORE")
 
         if not zset:
@@ -1071,7 +1071,7 @@ class MockRedis(object):
 
         count_removals = lambda score, member: 1 if zset.remove(member) else 0
         removal_count = sum((count_removals(score, member)
-                             for score, member in zset.scorerange(float(min_), float(max_))))
+                             for score, member in zset.scorerange(float(min), float(max))))
         if removal_count > 0 and len(zset) == 0:
             del self.redis[name]
         return removal_count
@@ -1081,7 +1081,7 @@ class MockRedis(object):
         return self.zrange(name, start, end,
                            desc=True, withscores=withscores, score_cast_func=score_cast_func)
 
-    def zrevrangebyscore(self, name, max_, min_, start=None, num=None,
+    def zrevrangebyscore(self, name, max, min, start=None, num=None,
                          withscores=False, score_cast_func=float):
 
         if (start is None) ^ (num is None):
@@ -1093,7 +1093,7 @@ class MockRedis(object):
 
         func = self._range_func(withscores, score_cast_func)
 
-        scorerange = [x for x in reversed(zset.scorerange(float(min_), float(max_)))]
+        scorerange = [x for x in reversed(zset.scorerange(float(min), float(max)))]
         if start is not None and num is not None:
             start, num = self._translate_limit(len(scorerange), int(start), int(num))
             scorerange = scorerange[start:start + num]
